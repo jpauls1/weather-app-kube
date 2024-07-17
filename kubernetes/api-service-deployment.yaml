@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: api-service
-        image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api
+        image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
