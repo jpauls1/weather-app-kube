@@ -24,7 +24,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{secrets.AWS_REGION}}
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -32,28 +32,28 @@ jobs:
 
     - name: Build and push API service image
       run: |
-        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api ./api-service
-        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }} ./api-service
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}
 
     - name: Build and push Web server image
       run: |
-        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web ./web-server
-        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }} ./web-server
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}
 
     - name: Build and push Worker service image
       run: |
-        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker ./worker-service
-        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }} ./worker-service
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}
 
     - name: Update image tags in Kubernetes manifests
-        run: |
-          sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}|' ./kubernetes/api-deployment.yaml
-          sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}|' ./kubernetes/web-deployment.yaml
-          sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}|' ./kubernetes/worker-deployment.yaml
+      run: |
+        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}|' ./kubernetes/api-deployment.yaml
+        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}|' ./kubernetes/web-deployment.yaml
+        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}|' ./kubernetes/worker-deployment.yaml
 
     - name: Update kubeconfig for EKS
       run: |
-        aws eks update-kubeconfig --region ${{secrets.AWS_REGION}} --name ${{secrets.EKS_CLUSTER_NAME}}
+        aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
 
     - name: Apply Kubernetes manifests
       run: |
