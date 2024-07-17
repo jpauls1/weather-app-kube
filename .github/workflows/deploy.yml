@@ -32,24 +32,18 @@ jobs:
 
     - name: Build and push API service image
       run: |
-        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }} ./api-service
-        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api ./api-service
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api
 
     - name: Build and push Web server image
       run: |
-        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }} ./web-server
-        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web ./web-server
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web
 
     - name: Build and push Worker service image
       run: |
-        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }} ./worker-service
-        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}
-
-    - name: Update image tags in Kubernetes manifests
-      run: |
-        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}|' ./kubernetes/web-server-deployment.yaml
-        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}|' ./kubernetes/worker-service-deployment.yaml
-        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}|' ./kubernetes/api-service-deployment.yaml
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker ./worker-service
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker
 
     - name: Update kubeconfig for EKS
       run: |
@@ -58,6 +52,12 @@ jobs:
     - name: Apply Kubernetes manifests
       run: |
         kubectl apply -f ./kubernetes
+
+    - name: Delete old pods to force new image deployment
+      run: |
+        kubectl delete pods -l app=api-service
+        kubectl delete pods -l app=web-server
+        kubectl delete pods -l app=worker-service
 
     - name: Wait for deployments to be available
       run: |
