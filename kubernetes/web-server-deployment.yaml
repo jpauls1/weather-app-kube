@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: web-server-container
-        image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}
+        image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web
         imagePullPolicy: Always
         ports:
         - containerPort: 80
