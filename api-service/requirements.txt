@@ -1,0 +1,7 @@
+Flask-CORS
+Flask
+requests
+redis
+boto3
+awscli
+pymysql

@@ -1,0 +1,17 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: jeffs-weather-app-dev
+  region: us-east-1
+
+nodeGroups:
+  - name: weather-app-workers
+    instanceType: t2.micro
+    desiredCapacity: 3
+    minSize: 1
+    maxSize: 4
+    volumeSize: 20
+    ssh:
+      allow: true
+      publicKeyName: nova_one_kp

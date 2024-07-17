@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker-service
+  template:
+    metadata:
+      labels:
+        app: worker-service
+    spec:
+      containers:
+      - name: worker-service-container
+        image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker
+        imagePullPolicy: Always
+        env:
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: SQS_QUEUE_URL
+          value: "https://sqs.us-east-1.amazonaws.com/767397836288/weather-requests"
+        - name: API_KEY
+          value: "5d5ba8a07e102ee516b77665df09c066"
+        - name: RDS_HOST
+          value: "weather-requests-db.cniw48ykgeqd.us-east-1.rds.amazonaws.com"
+        - name: RDS_USER
+          value: "admin"
+        - name: RDS_PASSWORD
+          value: "weather-admin"
+        - name: RDS_DB_NAME
+          value: "weather_requests"

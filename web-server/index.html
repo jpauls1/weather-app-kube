@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>    
+    <title>Jeff's Weather App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            // Load US states from S3
+            $.getJSON('https://jp-weather-application.s3.amazonaws.com/us_states.json', function(data) {
+                var $stateSelect = $("#state");
+                $stateSelect.append($('<option>', { value: '', text: 'Select a state' }));
+                $.each(data, function(index, state) {
+                    $stateSelect.append($('<option>', { value: state.code, text: state.name }));
+                });
+            });
+
+            // Load countries from S3
+            $.getJSON('https://jp-weather-application.s3.amazonaws.com/countries.json', function(data) {
+                var $countrySelect = $("#country");
+                $countrySelect.append($('<option>', { value: '', text: 'Select a country' }));
+                $.each(data, function(index, country) {
+                    $countrySelect.append($('<option>', { value: country.code, text: country.name }));
+                });
+            });
+
+            $("form").submit(function(event){
+                event.preventDefault(); // Prevent the form from submitting the traditional way
+                var city = $("#city").val();
+                var state = $("#state").val();
+                var country = $("#country").val();
+                $.ajax({
+                    url: "http://aa12ccd404c5c441dad7cc2f9a39efeb-203502025.us-east-1.elb.amazonaws.com/fetch_weather",
+                    type: "get",
+                    data: { city: city, state: state, country: country },
+                    dataType: "json",
+                    success: function(data){
+                        if(data.success){
+                            displayWeather(data);
+                        } else {
+                            $("#weather-result").html("<h1>Error: " + data.error + "</h1>");
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        $("#weather-result").html("<h1>Error fetching weather data: " + xhr.responseText + "</h1>");
+                    }
+                });
+
+
+            });
+
+            function displayWeather(data) {
+                $("#weather-result").html(
+                    "<div class='card'>" +
+                    "<div class='card-header'><h1>Weather in " + data.city + "</h1></div>" +
+                    "<div class='card-body'>" +
+                    "<p><strong>Main:</strong> " + data.main + "</p>" +
+                    "<p><strong>Temperature:</strong> " + data.temp + " °C</p>" +
+                    "<p><strong>Feels Like:</strong> " + data.feels_like + " °C</p>" +
+                    "<p><strong>Min Temperature:</strong> " + data.temp_min + " °C</p>" +
+                    "<p><strong>Max Temperature:</strong> " + data.temp_max + " °C</p>" +
+                    "<p><strong>Pressure:</strong> " + data.pressure + " hPa</p>" +
+                    "<p><strong>Humidity:</strong> " + data.humidity + " %</p>" +
+                    "<p><strong>Visibility:</strong> " + data.visibility + " m</p>" +
+                    "<p><strong>Wind Speed:</strong> " + data.wind_speed + " m/s</p>" +
+                    "<p><strong>Wind Direction:</strong> " + data.wind_deg + " °</p>" +
+                    "<p><strong>Cloudiness:</strong> " + data.clouds_all + " %</p>" +
+                    "<p><strong>Coordinates:</strong> (" + data.coord_lat + ", " + data.coord_lon + ")</p>" +
+                    "</div>" +
+                    "</div>"
+                );
+            }
+        });
+    </script>
+    <style>
+        body {
+            background: #e1ded3;
+            color: #333;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            margin-top: 20px;
+        }
+        .btn-custom {
+            background-color: #6cd7f5;
+            color: white;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%; /* Ensure it does not exceed the container width */
+            width: auto; /* Maintain aspect ratio */
+            height: auto; /* Maintain aspect ratio */
+            max-width: 400px; /* Adjust this value to match the width of the header */
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://jp-weather-application.s3.amazonaws.com/weather_app_logo.png" alt="Weather App Logo" class="logo">
+        <h1 class="text-center">Welcome to Jeff's Weather App</h1>
+        <p class="text-center">Enter a location below to search for current weather data.</p>
+        <form class="mt-4">
+            <div class="form-group">
+                <label for="city">Enter city name:</label>
+                <input type="text" id="city" name="city" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="state">Enter US State (optional):</label>
+                <select id="state" name="state" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label for="country">Enter country (optional):</label>
+                <select id="country" name="country" class="form-control"></select>
+            </div>
+            <button type="submit" class="btn btn-custom btn-block">Get Weather</button>
+        </form>
+        <div id="weather-result" class="mt-4"></div>
+    </div>
+    <footer class="footer text-center">
+        &#169; 2024 JP. Weather data powered by OpenWeather &#174;.
+    </footer>
+</body>
+</html>
