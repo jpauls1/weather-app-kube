@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{secrets.AWS_REGION}}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and push API service image
+      run: |
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api ./api-service
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api
+
+    - name: Build and push Web server image
+      run: |
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web ./web-server
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web
+
+    - name: Build and push Worker service image
+      run: |
+        docker build -t 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker ./worker-service
+        docker push 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker
+
+    - name: Update kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig --region ${{secrets.AWS_REGION}} --name ${{secrets.EKS_CLUSTER_NAME}}
+
+    - name: Apply Kubernetes manifests
+      run: |
+        kubectl apply -f ./kubernetes
+
+    - name: Wait for deployments to be available
+      run: |
+        kubectl rollout status deployment/api-service
+        kubectl rollout status deployment/web-server
+        kubectl rollout status deployment/worker-service
