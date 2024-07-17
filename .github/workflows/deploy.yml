@@ -47,9 +47,9 @@ jobs:
 
     - name: Update image tags in Kubernetes manifests
       run: |
-        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}|' ./kubernetes/api-deployment.yaml
         sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:web-${{ github.sha }}|' ./kubernetes/web-server-deployment.yaml
-        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}|' ./kubernetes/worker-deployment.yaml
+        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:worker-${{ github.sha }}|' ./kubernetes/worker-service-deployment.yaml
+        sed -i 's|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api.*|image: 767397836288.dkr.ecr.us-east-1.amazonaws.com/weather_repo:api-${{ github.sha }}|' ./kubernetes/api-service-deployment.yaml
 
     - name: Update kubeconfig for EKS
       run: |
