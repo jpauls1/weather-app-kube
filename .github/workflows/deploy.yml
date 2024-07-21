@@ -58,9 +58,3 @@ jobs:
         kubectl delete pods -l app=api-service
         kubectl delete pods -l app=web-server
         kubectl delete pods -l app=worker-service
-
-    - name: Wait for deployments to be available
-      run: |
-        kubectl rollout status deployment/api-service
-        kubectl rollout status deployment/web-server
-        kubectl rollout status deployment/worker-service
