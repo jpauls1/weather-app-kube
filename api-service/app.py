@@ -11,6 +11,7 @@ from config import REDIS_HOST, REDIS_PORT, SQS_QUEUE_URL, DB_HOST, DB_USER, DB_P
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 
+# Switch to Flask and Flask-CORS to better handle HTTP requests across services
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -109,7 +110,7 @@ def fetch_weather():
             redis_client.setex(cache_key, 30, "fetching")
             send_message_to_sqs(city, state, country)
 
-            # Wait a bit to allow worker to process (simulating what you did with time.sleep in CGI)
+            # Wait a bit to allow worker to process 
             time.sleep(2)
             weather_data = get_recent_weather_from_db(city, state, country)
             if weather_data:
@@ -145,4 +146,4 @@ def fetch_weather():
         return jsonify({'error': 'Internal Server Error'}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000) # port 5000 for Flask

@@ -5,8 +5,7 @@ import boto3
 import requests
 import logging
 import pymysql
-import redis
-from config import REDIS_HOST, REDIS_PORT, SQS_QUEUE_URL, API_KEY, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+from config import SQS_QUEUE_URL, API_KEY, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
@@ -14,9 +13,6 @@ logging.debug("Starting the worker.py script for constant polling")
 
 # Establish connection for SQS client
 sqs_client = boto3.client('sqs', region_name='us-east-1')
-
-# Initialize Redis connection
-redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
 
 # Function to get location coordinates from OpenWeatherMap API
 def get_location(city, state=None, country=None):
@@ -162,8 +158,6 @@ def main():
                         weather_data = get_weather(locations[0]['lat'], locations[0]['lon'], state, country)
                         if weather_data['success']:
                             save_weather_data(weather_data)
-                            cache_key = f"{city},{state},{country}"
-                            redis_client.delete(cache_key)  # Invalidate cache
 
                         sqs_client.delete_message(
                             QueueUrl=SQS_QUEUE_URL,
